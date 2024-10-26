@@ -10,6 +10,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 });
 
+// Function to extract email data based on the platform (Gmail, Outlook, etc.)
 async function extractEmailData() {
     function getPlatform() {
         const url = window.location.href;
@@ -21,6 +22,8 @@ async function extractEmailData() {
         return null;
     }
 
+    // Function to wait for an element to be present on the page with a timeout
+    // this is used to wait for the email body to load before extracting data
     function waitForElement(selector, timeout = 5000) {
         return new Promise((resolve, reject) => {
             const interval = 100; // Check every 100ms
@@ -40,6 +43,7 @@ async function extractEmailData() {
         });
     }
 
+    // Function to extract email content for Gmail
     async function extractGmailContent() {
         let senderName = '';
         let senderEmail = '';
@@ -89,6 +93,7 @@ async function extractEmailData() {
         }
     }
 
+    // Function to extract email content for Outlook.com
     async function extractOutlookContent() {
         let senderName = '';
         let senderEmail = '';
@@ -97,33 +102,36 @@ async function extractEmailData() {
         let body = '';
 
         try {
-            // Wait for the email body to load
-            await waitForElement('div[aria-label="Message body"]');
+            // Wait for the email content to be loaded
+            const emailContainer = await waitForElement('div[role="main"]');
 
-            // Get sender info using robust selectors
-            const senderElement = document.querySelector('div[aria-label="Message header"] span[role="presentation"][data-read-only="true"]');
-            if (senderElement) {
-                senderName = senderElement.textContent || '';
-                const emailElement = senderElement.closest('div').querySelector('a[href^="mailto:"]');
-                if (emailElement) {
-                    senderEmail = emailElement.getAttribute('href').replace('mailto:', '') || '';
+            // Get sender info using the specified class
+            const fromElement = emailContainer.querySelector('span.OZZZK');
+            if (fromElement) {
+                const senderInfo = fromElement.textContent.trim();
+                const emailMatch = senderInfo.match(/<(.+)>/);
+                if (emailMatch) {
+                    senderEmail = emailMatch[1];
+                    senderName = senderInfo.replace(emailMatch[0], '').trim();
+                } else {
+                    senderName = senderInfo; // If no email is found, treat the whole text as the name
                 }
             } else {
                 throw new Error('Sender information not found.');
             }
 
-            // Get subject
-            const subjectElement = document.querySelector('div[aria-label="Message header"] span[data-test-id="message-subject"]');
+            // Get subject using the specified class
+            const subjectElement = emailContainer.querySelector('span.JdFsz');
             if (subjectElement) {
-                subject = subjectElement.textContent || '';
+                subject = subjectElement.getAttribute('title') || subjectElement.textContent.trim();
             } else {
                 throw new Error('Subject not found.');
             }
 
             // Get email body
-            const bodyElement = document.querySelector('div[aria-label="Message body"]');
+            const bodyElement = emailContainer.querySelector('div[aria-label="Message body"]');
             if (bodyElement) {
-                body = bodyElement.innerHTML || bodyElement.textContent || '';
+                body = bodyElement.innerHTML || bodyElement.textContent.trim() || '';
             } else {
                 throw new Error('Email body not found.');
             }
@@ -134,6 +142,8 @@ async function extractEmailData() {
             throw error;
         }
     }
+
+
 
     const platform = getPlatform();
     if (!platform) {

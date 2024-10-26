@@ -1,72 +1,116 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Phishing Detection</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      width: 300px;
-      background-color: #f9f9f9;
+      width: 350px;
+      background-color: #f4f6f8;
       margin: 0;
-      padding: 20px;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background-color 0.3s, color 0.3s;
     }
 
     h1 {
-      font-size: 22px;
-      margin-bottom: 20px;
-      text-align: center;
+      font-size: 24px;
+      margin-top: 20px;
       color: #333;
     }
 
-    button {
-      padding: 10px;
-      width: 100%;
-      margin-bottom: 10px;
-      border: none;
-      border-radius: 5px;
-      background-color: #4285F4;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #357AE8;
+    .container {
+      width: 90%;
+      max-width: 350px;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      margin-top: 10px;
+      margin-bottom: 20px;
+      transition: background-color 0.3s, color 0.3s;
     }
 
     .logo {
       display: block;
-      margin: 0 auto 20px;
+      margin: 0 auto 10px;
       width: 80px;
       height: 80px;
     }
 
-    .footer {
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .btn-primary {
+      background-color: #4285F4;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #357AE8;
+    }
+
+    .btn-secondary {
+      background-color: #34A853;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background-color: #2a8a42;
+    }
+
+    .settings {
       margin-top: 20px;
-      text-align: center;
-      font-size: 12px;
-      color: #777;
     }
 
-    .footer a {
-      color: #777;
-      text-decoration: none;
+    .settings h2 {
+      font-size: 18px;
+      color: #555;
+      margin-bottom: 10px;
     }
 
-    .footer a:hover {
-      text-decoration: underline;
+    .settings-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 10px 0;
+    }
+
+    .settings-item label {
+      font-size: 14px;
+      color: #444;
+    }
+
+    .settings-item input[type="checkbox"] {
+      transform: scale(1.2);
+      cursor: pointer;
     }
 
     #output {
-      margin-top: 10px;
-      background-color: #fff;
-      padding: 10px;
+      margin-top: 15px;
+      background-color: #f9f9f9;
+      padding: 12px;
       border-radius: 5px;
       max-height: 200px;
       overflow-y: auto;
       font-size: 14px;
       color: #333;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s, color 0.3s;
     }
 
     #output pre {
@@ -74,19 +118,122 @@
       word-wrap: break-word;
       font-family: inherit;
     }
+
+    .footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 12px;
+      color: #777;
+      padding: 10px 0;
+      transition: color 0.3s;
+    }
+
+    .footer a {
+      color: #4285F4;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Dark Mode Styles */
+    body.dark-mode {
+      background-color: #1e1e1e;
+      color: #f1f1f1;
+    }
+
+    .container.dark-mode {
+      background-color: #333;
+      color: #f1f1f1;
+    }
+
+    #output.dark-mode {
+      background-color: #444;
+      color: #eaeaea;
+    }
+
+    .footer.dark-mode {
+      color: #bbb;
+    }
+
+    .btn.dark-mode {
+      background-color: #555;
+    }
+
+    .btn-primary.dark-mode {
+      background-color: #567fce;
+    }
+
+    .btn-secondary.dark-mode {
+      background-color: #3e7d48;
+    }
   </style>
 </head>
 
 <body>
-  <img src="icon128.png" alt="Logo" class="logo">
-  <h1>Phishing Detection</h1>
-  <button id="scanEmails">Scan Emails</button>
-  <button id="visitWebsite">Visit Our Website</button>
-  <div id="output"></div>
-  <div class="footer">
-    &copy; 2023 Your Company. All rights reserved.
+  <div class="container">
+    <img src="icon128.png" alt="Logo" class="logo">
+    <h1>Phishing Detection</h1>
+    <button id="scanEmails" class="btn btn-primary">Scan Emails</button>
+    <button id="visitWebsite" class="btn btn-secondary">Visit Our Website</button>
+    <div id="output">
+      <p>No scans yet. Results will be displayed here.</p>
+    </div>
+
+    <div class="settings">
+      <h2>Settings</h2>
+      <div class="settings-item">
+        <label for="enableNotifications">Enable Notifications</label>
+        <input type="checkbox" id="enableNotifications">
+      </div>
+      <div class="settings-item">
+        <label for="autoScan">Auto Scan on Load</label>
+        <input type="checkbox" id="autoScan">
+      </div>
+      <div class="settings-item">
+        <label for="darkMode">Enable Dark Mode</label>
+        <input type="checkbox" id="darkMode">
+      </div>
+    </div>
   </div>
-  <script src="popup.js"></script>
+
+  <div class="footer">
+    &copy; 2023 Your Company. All rights reserved. <br>
+    <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const darkModeCheckbox = document.getElementById('darkMode');
+      const enableDarkMode = () => {
+        document.body.classList.toggle('dark-mode');
+        document.querySelector('.container').classList.toggle('dark-mode');
+        document.getElementById('output').classList.toggle('dark-mode');
+        document.querySelector('.footer').classList.toggle('dark-mode');
+        document.querySelectorAll('.btn').forEach(btn => {
+          btn.classList.toggle('dark-mode');
+        });
+      };
+
+      // Load dark mode preference from localStorage
+      if (localStorage.getItem('darkMode') === 'enabled') {
+        darkModeCheckbox.checked = true;
+        enableDarkMode();
+      }
+
+      // Add event listener to the dark mode toggle
+      darkModeCheckbox.addEventListener('change', () => {
+        if (darkModeCheckbox.checked) {
+          enableDarkMode();
+          localStorage.setItem('darkMode', 'enabled');
+        } else {
+          enableDarkMode();
+          localStorage.setItem('darkMode', 'disabled');
+        }
+      });
+    });
+  </script>
 </body>
 
 </html>
