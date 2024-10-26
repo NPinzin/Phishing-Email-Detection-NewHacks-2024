@@ -7,7 +7,7 @@ app = FastAPI()
 # Allow CORS from Chrome extension (replace with your extension ID)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["chrome-extension://<your_extension_id>"],
+    allow_origins=["chrome-extension://<lgmnccgjjoccjbjcigblldjjehobmfpo>"],
     allow_methods=["*"],
     allow_headers=["*"]
 )

@@ -2,51 +2,64 @@
     "manifest_version": 3,
     "name": "Phishing Detection Extension",
     "version": "1.0",
-    "description": "Detects phishing emails in Gmail, Outlook, and other web-based email clients.",
+    "description": "Detects phishing emails in Gmail, Outlook, Yahoo, and other web-based email clients.",
     "permissions": [
         "activeTab",
         "storage",
         "scripting"
     ],
     "host_permissions": [
-        "https://your-backend-api.com/*",
+        "http://localhost:8000/*",
+        "https://mail.google.com/*",
         "https://outlook.office.com/*",
-        "https://outlook.live.com/*"
+        "https://outlook.live.com/*",
+        "https://mail.yahoo.com/*"
     ],
-    "background": {
-        "service_worker": "background.js"
-    },
     "action": {
-        "default_popup": "popup.html"
+        "default_popup": "popup.html",
+        "default_icon": {
+            "16": "icon16.png",
+            "48": "icon48.png",
+            "128": "icon128.png"
+        }
     },
     "content_scripts": [
         {
             "matches": [
-                "https://mail.google.com/*"
-            ],
-            "js": [
-                "content.js"
-            ]
-        },
-        {
-            "matches": [
+                "https://mail.google.com/*",
                 "https://outlook.office.com/mail/*",
-                "https://outlook.live.com/mail/*"
-            ],
-            "js": [
-                "content.js"
-            ]
-        },
-        {
-            "matches": [
+                "https://outlook.live.com/mail/*",
                 "https://mail.yahoo.com/*"
             ],
             "js": [
-                "content.js"
-            ]
+                "contentScript.js"
+            ],
+            "run_at": "document_idle",
+            "all_frames": true
         }
     ],
     "icons": {
-        "48": "icon.png"
+        "16": "icon16.png",
+        "48": "icon48.png",
+        "128": "icon128.png"
+    },
+    "background": {
+        "service_worker": "background.js"
+    },
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "icon.png",
+                "icon16.png",
+                "icon48.png",
+                "icon128.png"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
+        }
+    ],
+    "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self';"
     }
 }
