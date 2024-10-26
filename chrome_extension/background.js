@@ -20,3 +20,15 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     }).catch((error) => console.error('Failed to inject script:', error));
   }
 });
+
+// background.js
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'showNotification') {
+    chrome.notifications.create('', {
+      type: 'basic',
+      iconUrl: 'icon128.png',
+      title: request.title,
+      message: request.message
+    });
+  }
+});
