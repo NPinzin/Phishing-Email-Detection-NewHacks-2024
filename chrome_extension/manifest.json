@@ -1,0 +1,52 @@
+{
+    "manifest_version": 3,
+    "name": "Phishing Detection Extension",
+    "version": "1.0",
+    "description": "Detects phishing emails in Gmail, Outlook, and other web-based email clients.",
+    "permissions": [
+        "activeTab",
+        "storage",
+        "scripting"
+    ],
+    "host_permissions": [
+        "https://your-backend-api.com/*",
+        "https://outlook.office.com/*",
+        "https://outlook.live.com/*"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://mail.google.com/*"
+            ],
+            "js": [
+                "content.js"
+            ]
+        },
+        {
+            "matches": [
+                "https://outlook.office.com/mail/*",
+                "https://outlook.live.com/mail/*"
+            ],
+            "js": [
+                "content.js"
+            ]
+        },
+        {
+            "matches": [
+                "https://mail.yahoo.com/*"
+            ],
+            "js": [
+                "content.js"
+            ]
+        }
+    ],
+    "icons": {
+        "48": "icon.png"
+    }
+}
