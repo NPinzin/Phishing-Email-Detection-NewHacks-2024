@@ -37,7 +37,7 @@ def index():
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
 
-emailContents = ""
+emailContents = " "
 def fetch_data():
     input = requests.get('http://localhost:5000/flask')
     if input.status_code == 200:
@@ -54,26 +54,37 @@ def index():
 if __name__ == "__main__":
     app.run(port=5000,debug=True)
 
+
+
 text = torchtext.data.Field(sequential=True,
                             tokenize=lambda x: x,
                             include_lengths=True,
                             batch_first=True,
                             use_vocab=True)
+label = torchtext.data.Field(sequential=False,
+                            use_vocab=False,
+                            is_target=True,
+                            batch_first=True,
+                            dtype = torch.float)
 
-def predict_string(input_string):
-    # Tokenize the input string
-    tokenized_input = [char for char in input_string]  # Adjust this based on your tokenizer
-    # Convert to tensor
-    input_tensor = text.process([tokenized_input])
-    
-    # Step 4: Make a prediction
-    with torch.no_grad():  # Disable gradient calculation
-        prediction = model(input_tensor)
-        prob = nn.functional.softmax(prediction, dim=1)
-        max_index = torch.argmax(prob, dim=1)
-        max_probability = prediction[0,max_index].item()
+fields = [('text', text), ('label', label)]
+dataset = torchtext.data.TabularDataset("RNN/SpamHam/spam_ham_datasets.csv","csv",fields, skip_header=True)
+train, validate, test = dataset.split(split_ratio=[0.6,0.2,0.2])
+train_iter = torchtext.data.BucketIterator(train,
+                                           batch_size=32,
+                                           sort_key=lambda x: len(x.text), # to minimize padding
+                                           sort_within_batch=True,        # sort within each batch
+                                           repeat=False)                  # repeat the iterator for many epochs
+text.build_vocab(train)
+model = RNN(len(text.vocab.itos), 128, 1)
+model.load_state_dict(torch.load("RNN/saved_parameters/best_initial_model.pth", weights_only=True), strict = False)
 
-    return prediction       
+with torch.no_grad():  # Disable gradient calculation
+    prediction = model(emailContents)
+    prob = nn.functional.softmax(prediction, dim=1)
+    max_index = torch.argmax(prob, dim=1)
+    max_probability = prediction[0,max_index].item()
+
 
     
 
