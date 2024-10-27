@@ -1,4 +1,5 @@
 import torch
+from flask import Flask,  jsonify
 from torch import nn
 from torch.utils.data import DataLoader, Dataset, TensorDataset
 from torchvision import datasets
@@ -30,7 +31,7 @@ class NeuralNetwork(nn.Module):
         return logits
 
 model = NeuralNetwork()
-model.load_state_dict(torch.load("phishingDetection/model_weights.pth"))
+model.load_state_dict(torch.load("phishingDetection/model_weights.pth", weights_only=True), strict=False)
 model.eval()
 
 # Code Taken from HTML_extraction.ipynb
@@ -133,13 +134,13 @@ def process_file(h):
     feature_dict = {
         '@ in URLs': has_at_in_urls(urls),
         'Attachments': number_attachments(html),
-        'CSS': count_css_links(html),
+        'Css': count_css_links(html),
         'External Resources': count_external_resources(html),
-        'HTML Content': html_content_str(html),
+        'HTML content': html_content_str(html),
         'Html Form': html_form(html),
         'Html iFrame': iframe(html),
         'IPs in URLs': ips_in_urls(urls),
-        'JavaScript': count_javascript_blocks(html),
+        'Javascript': count_javascript_blocks(html),
         'URLs': len(urls)
     }
 
@@ -152,6 +153,14 @@ def process_file(h):
 
 # End of Code from HTML_extraction.ipynb
 
+app = Flask(__name__)
+@app.route('/send-string', methods=['POST'])
+def index():
+    return jsonify({ "prediction": max_probability })
+if __name__ == '__main__':
+    app.run(port=5000, debug=True)
+
+emailContents = ""
 def fetch_data():
     input = requests.get('http://localhost:5000/flask')
     if input.status_code == 200:
@@ -168,28 +177,35 @@ def index():
 if __name__ == "__main__":
     app.run(port=5000,debug=True)
 
+    
+
 row = process_file(emailContents)
 
-atInUrl =  1 if row['@ in URLs'] else 0
-Attachments = row['Attachments']
+atInUrl =  1 if row['@ in URLs'].iloc[0] else 0
+Attachments = row['Attachments'].iloc[0]
 Css = row['Css']
 Ext = row['External Resources']
-htmlcont = 1 if row['HTML content'] else 0
-htmlform = 1 if row['Html Form'] else 0
-htmliframe = 1 if row['Html iFrame'] else 0
-ip = 1 if row['IPs in URLs'] else 0
+htmlcont = 1 if row['HTML content'].iloc[0] else 0
+htmlform = 1 if row['Html Form'].iloc[0] else 0
+htmliframe = 1 if row['Html iFrame'].iloc[0] else 0
+ip = 1 if row['IPs in URLs'].iloc[0] else 0
 js = row['Javascript']
 urls = row['URLs']
 features = [atInUrl,Attachments,Css,Ext,htmlcont,htmlform,htmliframe,ip,js,urls]
 features_tensor = torch.tensor(features, dtype=torch.float32)
 
-new_data = (TensorDataset(features_tensor.unsqueeze(0)))
+new_data = TensorDataset(features_tensor.unsqueeze(0))
 new_dataloader = DataLoader(new_data, batch_size = 1)
 
-with torch.no_grad():
-    for X in new_dataloader:
-        prediction = model(new_dataloader)
 
-print(prediction.argmax(1))
+with torch.no_grad():
+    for batch in new_dataloader:
+        X = batch[0]
+        prediction = model(X)
+        prob = nn.functional.softmax(prediction, dim=1)
+        max_index = torch.argmax(prob, dim=1)
+        max_probability = prediction[0,max_index].item()
+
+# print(prediction.argmax(1))
     
 

@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const progressText = document.getElementById('progress-text');
 
     // Set the percentage directly here
-    const percentage = 80; // Set your desired percentage value here
+    const percentage = 18; // Set your desired percentage value here
 
     // Initialize the progress bar based on the percentage
     updateProgress(percentage);
@@ -30,32 +30,35 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to calculate gradient color based on percentage
     function calculateGradientColor(percentage) {
         let color;
-
+    
         if (percentage <= 25) {
-            // 0% to 25%: Dark Red to Orange
+            // 0% to 25%: Dark Green to Light Green
             const ratio = percentage / 25;
-            const red = Math.round(139 + (255 - 139) * ratio);   // Dark Red (139, 0, 0) to Orange (255, 165, 0)
-            const green = Math.round(0 + 165 * ratio);            // Green value from 0 to 165
+            const red = 0; // Constant at 0
+            const green = Math.round(150 + (255 - 150) * ratio); // Green value from 150 to 255
             color = `rgb(${red}, ${green}, 0)`;
         } else if (percentage <= 50) {
-            // 26% to 50%: Orange to Yellow
+            // 26% to 50%: Light Green to Yellow
             const ratio = (percentage - 25) / 25;
-            const red = 255;                                      // Constant at 255
-            const green = Math.round(165 + (255 - 165) * ratio);  // Green value from 165 to 255
+            const red = Math.round(255 * ratio); // Red value increases from 0 to 255
+            const green = 255; // Constant at 255
             color = `rgb(${red}, ${green}, 0)`;
         } else if (percentage <= 75) {
-            // 51% to 75%: Yellow to Green
+            // 51% to 75%: Yellow to Orange
             const ratio = (percentage - 50) / 25;
-            const red = Math.round(255 - 255 * ratio);            // Red decreases from 255 to 0
-            const green = 255;                                    // Constant at 255
+            const red = 255; // Constant at 255
+            const green = Math.round(255 - (255 * ratio)); // Green decreases from 255 to 0
             color = `rgb(${red}, ${green}, 0)`;
         } else {
-            // 76% to 100%: Green to Light Green
+            // 76% to 100%: Orange to Dark Red
             const ratio = (percentage - 75) / 25;
-            const green = Math.round(255 - (255 - 150) * ratio);  // Green decreases from 255 to 150
-            color = `rgb(0, ${green}, 0)`; // Lighter green
+            const red = Math.round(255 - (139 - 255) * ratio); // Red decreases from 255 to 139
+            const green = 0; // Constant at 0
+            color = `rgb(${red}, ${green}, 0)`; // Dark Red
         }
-
+    
         return color;
     }
-});
+}); 
+
+
