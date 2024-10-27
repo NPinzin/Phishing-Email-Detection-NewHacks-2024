@@ -4,14 +4,16 @@
     "version": "1.0",
     "description": "Detects phishing emails in Gmail, Outlook, Yahoo, and other web-based email clients.",
     "permissions": [
+        "downloads",
         "activeTab",
         "storage",
-        "scripting",
         "notifications",
-        "downloads"
+        "scripting",
+        "http://localhost/*"
     ],
     "host_permissions": [
-        "http://localhost:8000/*",
+        "http://localhost:3000/*",
+        "http://localhost:5000/*",
         "https://mail.google.com/*",
         "https://outlook.office.com/*",
         "https://outlook.live.com/*",
