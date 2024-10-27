@@ -6,6 +6,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const outputDiv = document.getElementById('output');
   const body = document.body;
 
+  // API Base URL
+  const API_BASE_URL = 'http://localhost:3000'; // Adjust as needed
+
+  // Initially check login state and toggle UI accordingly
+  chrome.storage.sync.get(['isLoggedIn'], (data) => {
+    if (data.isLoggedIn) {
+      document.getElementById('auth-container').style.display = 'none';
+      document.querySelector('.container').style.display = 'block';
+    } else {
+      document.getElementById('auth-container').style.display = 'block';
+      document.querySelector('.container').style.display = 'none';
+    }
+  });
+
   // Load settings from storage
   chrome.storage.sync.get(['darkMode', 'autoScan', 'enableNotifications'], (data) => {
     darkModeCheckbox.checked = data.darkMode || false;
@@ -26,57 +40,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Event listener for dark mode toggle
+  // Event listeners for settings toggles
   darkModeCheckbox.addEventListener('change', () => {
     if (darkModeCheckbox.checked) {
       body.classList.add('dark-mode');
     } else {
       body.classList.remove('dark-mode');
     }
-    // Save setting
     chrome.storage.sync.set({ darkMode: darkModeCheckbox.checked });
   });
 
-  // Event listener for autoScan toggle
   autoScanCheckbox.addEventListener('change', () => {
-    // Save setting
     chrome.storage.sync.set({ autoScan: autoScanCheckbox.checked });
-
-    // Disable or enable notifications checkbox
     enableNotificationsCheckbox.disabled = !autoScanCheckbox.checked;
 
-    // Uncheck notifications if autoScan is disabled
     if (!autoScanCheckbox.checked) {
       enableNotificationsCheckbox.checked = false;
       chrome.storage.sync.set({ enableNotifications: false });
     }
 
-    // If autoScan is enabled, trigger scan
     if (autoScanCheckbox.checked) {
       scanEmails();
     }
   });
 
-  // Event listener for enableNotifications toggle
   enableNotificationsCheckbox.addEventListener('change', () => {
-    // Save setting
     chrome.storage.sync.set({ enableNotifications: enableNotificationsCheckbox.checked });
   });
 
-  // Event listener for scanEmails button
+  // Scan emails when the "Scan Emails" button is clicked
   document.getElementById('scanEmails').addEventListener('click', scanEmails);
 
-  // Event listener for visitWebsite button
+  // Open a new tab when the "Visit Website" button is clicked
   document.getElementById('visitWebsite').addEventListener('click', () => {
-    // Open the website in a new tab
     chrome.tabs.create({ url: 'https://youtube.com' });
   });
 
+  // Function to scan emails
   function scanEmails() {
-    // Clear previous output
     outputDiv.innerHTML = 'Scanning...';
 
-    // Send a message to the content script
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs.length === 0) {
         outputDiv.innerHTML = '<p style="color:red;">No active tab found.</p>';
@@ -91,7 +94,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (response && response.success) {
           const data = response.data;
-          // Display the extracted data
           let message = `<strong>Sender Name:</strong> ${data.senderName || 'N/A'}<br>`;
           message += `<strong>Sender Email:</strong> ${data.senderEmail || 'N/A'}<br>`;
           message += `<strong>Reply-To:</strong> ${data.replyTo || 'N/A'}<br>`;
@@ -99,31 +101,34 @@ document.addEventListener('DOMContentLoaded', () => {
           message += `<strong>Email Content:</strong><br><pre>${data.body || 'N/A'}</pre>`;
           outputDiv.innerHTML = message;
 
-          // Save the output to a .html file
-          let timestamp = new Date().toISOString().replace(/[:.]/g, '-'); // Generate a timestamp
-          let filename = `email_output_${timestamp}.html`;
-          let blob = new Blob([message], { type: 'text/html' });
-          let url = URL.createObjectURL(blob);
+          // Send the data to the Python scraper
+          fetch('http://localhost:5000/process_email', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ message: message }),
+          })
+            .then(response => response.json())
+            .then(data => {
+              console.log('Data sent to Python scraper:', data);
+              // Optionally, display a success message to the user
+              outputDiv.innerHTML += '<p style="color:green;">Email data sent to the server successfully.</p>';
+            })
+            .catch(error => {
+              console.error('Error sending data to Python scraper:', error);
+              outputDiv.innerHTML += `<p style="color:red;">Error sending data to the server: ${error.message}</p>`;
+            });
 
-          // Download the file
-          chrome.downloads.download({
-            url: url,
-            filename: filename,
-            saveAs: false  // Set to true if you want to prompt the Save As dialog
-          }, function (downloadId) {
-            // Optional callback
-            console.log('Download initiated with ID:', downloadId);
-            // Note: We cannot revoke the object URL here since we don't know when the download finishes
-          });
 
-          // If notifications are enabled, show a notification
+          // Show notification if enabled
           chrome.storage.sync.get('enableNotifications', (storageData) => {
             if (storageData.enableNotifications) {
               chrome.notifications.create('', {
                 type: 'basic',
                 iconUrl: 'icon128.png',
                 title: 'Phishing Detection',
-                message: 'Scan completed successfully.'
+                message: 'Scan completed successfully.',
               });
             }
           });
@@ -135,4 +140,76 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   }
+
+  // Handle Login Form Submission
+  const loginForm = document.getElementById('login-form');
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        // Save login state in chrome.storage
+        chrome.storage.sync.set({ isLoggedIn: true, userEmail: email }, () => {
+          document.getElementById('auth-container').style.display = 'none';
+          document.querySelector('.container').style.display = 'block';
+          alert('Login successful!');
+        });
+      } else {
+        alert(`Login failed: ${data.message}`);
+      }
+    } catch (error) {
+      console.error('Error during login:', error);
+      alert('An error occurred during login.');
+    }
+  });
+
+  // Handle Signup Form Submission
+  const signupForm = document.getElementById('signup-form');
+  signupForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('signup-email').value;
+    const password = document.getElementById('signup-password').value;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        alert('Signup successful! You can now log in.');
+        document.getElementById('login-email').value = email;
+        document.getElementById('login-password').value = password;
+      } else {
+        alert(`Signup failed: ${data.message}`);
+      }
+    } catch (error) {
+      console.error('Error during signup:', error);
+      alert('An error occurred during signup.');
+    }
+  });
+
+  // Add logout functionality
+  document.getElementById('logout').addEventListener('click', () => {
+    chrome.storage.sync.set({ isLoggedIn: false, userEmail: null }, () => {
+      document.getElementById('auth-container').style.display = 'block';
+      document.querySelector('.container').style.display = 'none';
+      alert('Logged out successfully.');
+    });
+  });
 });
