@@ -99,9 +99,26 @@ document.addEventListener('DOMContentLoaded', () => {
           message += `<strong>Email Content:</strong><br><pre>${data.body || 'N/A'}</pre>`;
           outputDiv.innerHTML = message;
 
+          // Save the output to a .html file
+          let timestamp = new Date().toISOString().replace(/[:.]/g, '-'); // Generate a timestamp
+          let filename = `email_output_${timestamp}.html`;
+          let blob = new Blob([message], { type: 'text/html' });
+          let url = URL.createObjectURL(blob);
+
+          // Download the file
+          chrome.downloads.download({
+            url: url,
+            filename: filename,
+            saveAs: false  // Set to true if you want to prompt the Save As dialog
+          }, function (downloadId) {
+            // Optional callback
+            console.log('Download initiated with ID:', downloadId);
+            // Note: We cannot revoke the object URL here since we don't know when the download finishes
+          });
+
           // If notifications are enabled, show a notification
-          chrome.storage.sync.get('enableNotifications', (data) => {
-            if (data.enableNotifications) {
+          chrome.storage.sync.get('enableNotifications', (storageData) => {
+            if (storageData.enableNotifications) {
               chrome.notifications.create('', {
                 type: 'basic',
                 iconUrl: 'icon128.png',
@@ -119,4 +136,3 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
-
