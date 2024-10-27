@@ -49,6 +49,31 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+// API Endpoint to save email verification data
+app.post('/api/save-email-verification', async (req, res) => {
+    const { userEmail, emailData, prediction } = req.body;
+    try {
+        // Find the user
+        const user = await LogInCollection.findOne({ email: userEmail });
+        if (user) {
+            // Update the user's verification history
+            user.verificationHistory.push({
+                date: new Date(),
+                emailData: emailData,
+                prediction: prediction,
+            });
+            await user.save();
+            res.status(200).json({ message: 'Email verification data saved.' });
+        } else {
+            res.status(404).json({ message: 'User not found.' });
+        }
+    } catch (error) {
+        console.error('Error saving email verification data:', error);
+        res.status(500).json({ message: 'Error saving email verification data.' });
+    }
+});
+
+
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });

@@ -35,19 +35,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     progressFill.style.width = percentage + '%';
     progressText.textContent = percentage + '%';
-      // Change the color of the progress fill based on the percentage ranges
-        if (percentage < 25) {
-            progressFill.style.backgroundColor = '#006400'; // Darker green
-        } else if (percentage < 50) {
-            progressFill.style.backgroundColor = '#008000'; // Green
-        } else if (percentage < 70) {
-            progressFill.style.backgroundColor = '#f1c40f'; // Yellow
-        } else if (percentage < 90) {
-            progressFill.style.backgroundColor = '#e67e22'; // Orange
-        } else {
-            progressFill.style.backgroundColor = '#e74c3c'; // Red
-        }
+    // Change the color of the progress fill based on the percentage ranges
+    if (percentage < 25) {
+      progressFill.style.backgroundColor = '#006400'; // Darker green
+    } else if (percentage < 50) {
+      progressFill.style.backgroundColor = '#008000'; // Green
+    } else if (percentage < 70) {
+      progressFill.style.backgroundColor = '#f1c40f'; // Yellow
+    } else if (percentage < 90) {
+      progressFill.style.backgroundColor = '#e67e22'; // Orange
+    } else {
+      progressFill.style.backgroundColor = '#e74c3c'; // Red
     }
+  }
 
 
   // Load settings from storage
@@ -157,6 +157,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Display the prediction result to the user
                 const predictionMessage = data.prediction;
                 outputDiv.innerHTML += `<p>${predictionMessage}</p>`;
+
+                // Now send the email data and prediction to our server
+                chrome.storage.sync.get('userEmail', ({ userEmail }) => {
+                  if (userEmail) {
+                    fetch(`${API_BASE_URL}/api/save-email-verification`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        userEmail: userEmail,
+                        emailData: message,
+                        prediction: data.prediction,
+                      }),
+                    })
+                      .then((response) => response.json())
+                      .then((saveData) => {
+                        console.log('Email verification data saved:', saveData);
+                      })
+                      .catch((error) => {
+                        console.error('Error saving email verification data:', error);
+                      });
+                  } else {
+                    console.error('User email not found in storage.');
+                  }
+                });
+
               } else {
                 outputDiv.innerHTML += `<p style="color:red;">Error: ${data.message}</p>`;
                 progressContainer.style.display = 'none';
@@ -174,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
               chrome.notifications.create('scanComplete', {
                 type: 'basic',
                 iconUrl: 'icon128.png',
-                title: 'Phishing Detection',
+                title: 'Scam Detection',
                 message: 'Scan completed successfully.',
                 buttons: [{ title: 'View Details' }],
               });
