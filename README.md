@@ -36,11 +36,6 @@ Including,
 
 ### *HTML_extraction.ipynb*
 > Implements several functions to scrape an email as a string of html into the paramaters above using **Python** libraries such as **RegEx**, **BeautifulSoup4**, and **tldextract**.
-# Neural Network
-Built using PyTorch in a Jupyter Notebook \
-
-Dataset was pulled from https://github.com/diegoocampoh/MachineLearningPhishing taking over 2000 emails from the Enron database and 2000 emails from reported phishing emails. \
-Through a series of functions using BeautifulSoup, etc **** the following paramaters are pulled out from each of the emails.
 
 
 # References
