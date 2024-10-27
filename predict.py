@@ -9,6 +9,7 @@ import re
 from bs4 import BeautifulSoup
 import tldextract
 import requests
+from flask import Flask
 
 class NeuralNetwork(nn.Module):
     def __init__(self):
@@ -152,13 +153,20 @@ def process_file(h):
 # End of Code from HTML_extraction.ipynb
 
 def fetch_data():
-    input = requests.get('http://localhost:5000/send-string')
+    input = requests.get('http://localhost:5000/flask')
     if input.status_code == 200:
         data = input.json()
         return data
 if  __name__ == '__main__':
     emailContents = fetch_data()
     
+app = Flask(__name__)
+@app.route('/flask',methods=['POST'])
+def index():
+    return "Flask server"
+
+if __name__ == "__main__":
+    app.run(port=5000,debug=True)
 
 row = process_file(emailContents)
 
