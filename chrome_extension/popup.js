@@ -1,3 +1,5 @@
+// popup.js
+
 document.addEventListener('DOMContentLoaded', () => {
   // Get references to elements
   const darkModeCheckbox = document.getElementById('darkMode');
@@ -6,22 +8,38 @@ document.addEventListener('DOMContentLoaded', () => {
   const outputDiv = document.getElementById('output');
   const body = document.body;
 
+  // Progress bar elements
+  const progressContainer = document.getElementById('progress-container');
+  const progressFill = document.getElementById('progress-fill');
+  const progressText = document.getElementById('progress-text');
+
   // API Base URL
-  const API_BASE_URL = 'http://localhost:3000'; // Adjust as needed
+  const API_BASE_URL = 'http://localhost:3000';
+  const API_BASE_URL2 = 'http://localhost:5000';
+
 
   // Initially check login state and toggle UI accordingly
-  chrome.storage.sync.get(['isLoggedIn'], (data) => {
+  chrome.storage.sync.get(['isLoggedIn'], data => {
     if (data.isLoggedIn) {
       document.getElementById('auth-container').style.display = 'none';
-      document.querySelector('.container').style.display = 'block';
+      document.getElementById('main-content').style.display = 'block';
     } else {
       document.getElementById('auth-container').style.display = 'block';
-      document.querySelector('.container').style.display = 'none';
+      document.getElementById('main-content').style.display = 'none';
     }
   });
 
+  function updateProgressBar(predictionMessage) {
+    // Convert to percentage and format to 2 decimal points
+    const percentage = (predictionMessage * 1000).toFixed(2);
+
+    progressFill.style.width = percentage + '%';
+    progressText.textContent = percentage + '%';
+  }
+
+
   // Load settings from storage
-  chrome.storage.sync.get(['darkMode', 'autoScan', 'enableNotifications'], (data) => {
+  chrome.storage.sync.get(['darkMode', 'autoScan', 'enableNotifications'], data => {
     darkModeCheckbox.checked = data.darkMode || false;
     autoScanCheckbox.checked = data.autoScan || false;
     enableNotificationsCheckbox.checked = data.enableNotifications || false;
@@ -73,16 +91,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Open a new tab when the "Visit Website" button is clicked
   document.getElementById('visitWebsite').addEventListener('click', () => {
-    chrome.tabs.create({ url: 'https://youtube.com' });
+    chrome.tabs.create({ url: 'https://findingnemo.co' });
   });
+
+
 
   // Function to scan emails
   function scanEmails() {
     outputDiv.innerHTML = 'Scanning...';
+    progressContainer.style.display = 'block';
+    updateProgressBar(0);
 
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs.length === 0) {
         outputDiv.innerHTML = '<p style="color:red;">No active tab found.</p>';
+        progressContainer.style.display = 'none';
         return;
       }
 
@@ -90,45 +113,58 @@ document.addEventListener('DOMContentLoaded', () => {
         if (chrome.runtime.lastError) {
           console.error('Runtime error:', chrome.runtime.lastError.message);
           outputDiv.innerHTML = `<p style="color:red;">Error: ${chrome.runtime.lastError.message}</p>`;
+          progressContainer.style.display = 'none';
           return;
         }
         if (response && response.success) {
           const data = response.data;
-          let message = `<strong>Sender Name:</strong> ${data.senderName || 'N/A'}<br>`;
-          message += `<strong>Sender Email:</strong> ${data.senderEmail || 'N/A'}<br>`;
-          message += `<strong>Reply-To:</strong> ${data.replyTo || 'N/A'}<br>`;
-          message += `<strong>Subject:</strong> ${data.subject || 'N/A'}<br><br>`;
-          message += `<strong>Email Content:</strong><br><pre>${data.body || 'N/A'}</pre>`;
-          outputDiv.innerHTML = message;
+          let message = {
+            senderName: data.senderName || 'N/A',
+            senderEmail: data.senderEmail || 'N/A',
+            replyTo: data.replyTo || 'N/A',
+            subject: data.subject || 'N/A',
+            body: data.body || 'N/A',
+          };
+          outputDiv.innerHTML = `<pre>${JSON.stringify(message, null, 2)}</pre>`;
 
-          // Send the data to the Python scraper
-          fetch('http://localhost:5000/process_email', {
+          // Send the data to the server
+          fetch('http://localhost:5000/send-string', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ message: message }),
+            body: JSON.stringify({ message: data.body }),
           })
-            .then(response => response.json())
-            .then(data => {
-              console.log('Data sent to Python scraper:', data);
-              // Optionally, display a success message to the user
-              outputDiv.innerHTML += '<p style="color:green;">Email data sent to the server successfully.</p>';
+            .then((response) => response.json())
+            .then((data) => {
+              console.log('Data received from Python scraper:', data);
+              if (data.prediction !== undefined) {
+                // Update progress bar based on risk percentage
+                updateProgressBar(data.prediction);
+
+                // Display the prediction result to the user
+                const predictionMessage = data.prediction;
+                outputDiv.innerHTML += `<p>${predictionMessage}</p>`;
+              } else {
+                outputDiv.innerHTML += `<p style="color:red;">Error: ${data.message}</p>`;
+                progressContainer.style.display = 'none';
+              }
             })
-            .catch(error => {
+            .catch((error) => {
               console.error('Error sending data to Python scraper:', error);
               outputDiv.innerHTML += `<p style="color:red;">Error sending data to the server: ${error.message}</p>`;
+              progressContainer.style.display = 'none';
             });
-
 
           // Show notification if enabled
           chrome.storage.sync.get('enableNotifications', (storageData) => {
             if (storageData.enableNotifications) {
-              chrome.notifications.create('', {
+              chrome.notifications.create('scanComplete', {
                 type: 'basic',
                 iconUrl: 'icon128.png',
                 title: 'Phishing Detection',
                 message: 'Scan completed successfully.',
+                buttons: [{ title: 'View Details' }],
               });
             }
           });
@@ -136,14 +172,45 @@ document.addEventListener('DOMContentLoaded', () => {
           const errorMsg = response && response.error ? response.error : 'Unknown error';
           console.error('Error in response:', errorMsg);
           outputDiv.innerHTML = `<p style="color:red;">Error extracting data: ${errorMsg}</p>`;
+          progressContainer.style.display = 'none';
         }
       });
     });
   }
 
+
+
+  // Handle Tab Switching in Auth Forms
+  const tablinks = document.getElementsByClassName('tablinks');
+  for (let i = 0; i < tablinks.length; i++) {
+    tablinks[i].addEventListener('click', function () {
+      openTab(this.textContent.trim());
+    });
+  }
+
+
+  function openTab(tabName) {
+    const tabcontent = document.getElementsByClassName('tabcontent');
+    const tablinks = document.getElementsByClassName('tablinks');
+
+    for (let i = 0; i < tabcontent.length; i++) {
+      tabcontent[i].style.display = 'none';
+    }
+
+    for (let i = 0; i < tablinks.length; i++) {
+      tablinks[i].classList.remove('active');
+      if (tablinks[i].textContent.trim() === tabName) {
+        tablinks[i].classList.add('active');
+      }
+    }
+
+    document.getElementById(tabName).style.display = 'block';
+  }
+
+
   // Handle Login Form Submission
   const loginForm = document.getElementById('login-form');
-  loginForm.addEventListener('submit', async (e) => {
+  loginForm.addEventListener('submit', async e => {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
@@ -151,18 +218,15 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/login`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
       });
 
       const data = await response.json();
       if (response.ok) {
-        // Save login state in chrome.storage
         chrome.storage.sync.set({ isLoggedIn: true, userEmail: email }, () => {
           document.getElementById('auth-container').style.display = 'none';
-          document.querySelector('.container').style.display = 'block';
+          document.getElementById('main-content').style.display = 'block';
           alert('Login successful!');
         });
       } else {
@@ -184,10 +248,8 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/signup`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
       });
 
       const data = await response.json();
@@ -195,6 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('Signup successful! You can now log in.');
         document.getElementById('login-email').value = email;
         document.getElementById('login-password').value = password;
+        openTab('Login');
       } else {
         alert(`Signup failed: ${data.message}`);
       }
@@ -208,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('logout').addEventListener('click', () => {
     chrome.storage.sync.set({ isLoggedIn: false, userEmail: null }, () => {
       document.getElementById('auth-container').style.display = 'block';
-      document.querySelector('.container').style.display = 'none';
+      document.getElementById('main-content').style.display = 'none';
       alert('Logged out successfully.');
     });
   });

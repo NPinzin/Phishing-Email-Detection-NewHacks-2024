@@ -2,239 +2,108 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Phishing Detection</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      width: 400px;
-      background-color: #f2f4f7;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    h1 {
-      font-size: 26px;
-      margin-top: 20px;
-      color: #333;
-    }
-
-    .container {
-      width: 95%;
-      max-width: 400px;
-      padding: 20px;
-      background-color: #ffffff;
-      border-radius: 10px;
-      box-shadow: 0 3px 7px rgba(0, 0, 0, 0.15);
-      margin-top: 15px;
-      margin-bottom: 20px;
-    }
-
-    .logo {
-      display: block;
-      margin: 0 auto 15px;
-      width: 90px;
-      height: 90px;
-    }
-
-    .btn {
-      display: block;
-      width: 100%;
-      padding: 14px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 6px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background-color 0.3s, transform 0.1s;
-    }
-
-    .btn-primary {
-      background-color: #4b8bf5;
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background-color: #336bd8;
-      transform: scale(1.02);
-    }
-
-    .btn-secondary {
-      background-color: #45c163;
-      color: white;
-    }
-
-    .btn-secondary:hover {
-      background-color: #3ba255;
-      transform: scale(1.02);
-    }
-
-    .settings {
-      margin-top: 25px;
-    }
-
-    .settings h2 {
-      font-size: 20px;
-      color: #444;
-      margin-bottom: 12px;
-    }
-
-    .settings-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin: 12px 0;
-    }
-
-    .settings-item label {
-      font-size: 15px;
-      color: #555;
-    }
-
-    .settings-item input[type="checkbox"] {
-      transform: scale(1.3);
-      cursor: pointer;
-    }
-
-    #output {
-      margin-top: 20px;
-      background-color: #f1f3f5;
-      padding: 14px;
-      border-radius: 6px;
-      max-height: 220px;
-      overflow-y: auto;
-      font-size: 15px;
-      color: #333;
-      box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    #output pre {
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      font-family: inherit;
-    }
-
-    .footer {
-      margin-top: 20px;
-      text-align: center;
-      font-size: 13px;
-      color: #777;
-      padding: 12px 0;
-    }
-
-    .footer a {
-      color: #4b8bf5;
-      text-decoration: none;
-    }
-
-    .footer a:hover {
-      text-decoration: underline;
-    }
-
-    /* Dark Mode Styles */
-    body.dark-mode {
-      background-color: #1a1c1e;
-      color: #e4e4e4;
-    }
-
-    body.dark-mode .container {
-      background-color: #25282b;
-      border: 1px solid #3e4144;
-    }
-
-    body.dark-mode .btn {
-      background-color: #455a64;
-      color: #e4e4e4;
-      border: 1px solid #4a4e52;
-    }
-
-    body.dark-mode .btn:hover {
-      background-color: #5a6e76;
-      border-color: #5f737a;
-    }
-
-    body.dark-mode .btn-primary {
-      background-color: #2874f0;
-      color: #ffffff;
-      border: 1px solid #3b8efc;
-    }
-
-    body.dark-mode .btn-primary:hover {
-      background-color: #4794ff;
-      border-color: #5da6ff;
-    }
-
-    body.dark-mode .btn-secondary {
-      background-color: #3ba255;
-      color: white;
-      border: 1px solid #4dbf68;
-    }
-
-    body.dark-mode .btn-secondary:hover {
-      background-color: #55c97b;
-      border-color: #69df91;
-    }
-
-    body.dark-mode #output {
-      background-color: #2e3235;
-      color: #d1d1d1;
-      border: 1px solid #404446;
-    }
-
-    body.dark-mode .footer {
-      color: #aaa;
-    }
-
-    body.dark-mode a {
-      color: #6ea9ff;
-      text-decoration: underline;
-    }
-
-    body.dark-mode a:hover {
-      color: #8fc4ff;
-    }
-  </style>
+  <link rel="stylesheet" href="popup.css" />
 </head>
-
-
-
 
 <body>
   <div class="container">
-    <img src="icon128.png" alt="Logo" class="logo">
-    <h1>Phishing Detection</h1>
-    <button id="scanEmails" class="btn btn-primary">Scan Emails</button>
-    <button id="visitWebsite" class="btn btn-secondary">Visit Our Website</button>
-    <div id="output">
-      <p>No scans yet. Results will be displayed here.</p>
+    <!-- Logo -->
+    <div class="logo-container">
+      <img src="icon128.png" alt="Logo" class="logo" />
     </div>
 
-    <div class="settings">
-      <h2>Settings</h2>
-      <div class="settings-item">
-        <label for="enableNotifications">Enable Notifications</label>
-        <input type="checkbox" id="enableNotifications">
+    <!-- Title -->
+    <h1>Phishing Detection</h1>
+
+    <!-- Authentication Forms -->
+    <div id="auth-container">
+      <div class="tab">
+        <button class="tablinks active" onclick="openTab(event, 'Login')">Login</button>
+        <button class="tablinks" onclick="openTab(event, 'SignUp')">Sign Up</button>
       </div>
-      <div class="settings-item">
-        <label for="autoScan">Auto Scan on Load</label>
-        <input type="checkbox" id="autoScan">
+
+      <div id="Login" class="tabcontent" style="display: block;">
+        <form id="login-form">
+          <div class="input-group">
+            <input type="email" id="login-email" required />
+            <label for="login-email">Email</label>
+          </div>
+          <div class="input-group">
+            <input type="password" id="login-password" required />
+            <label for="login-password">Password</label>
+          </div>
+          <button type="submit" class="btn btn-primary">Login</button>
+        </form>
       </div>
-      <div class="settings-item">
-        <label for="darkMode">Enable Dark Mode</label>
-        <input type="checkbox" id="darkMode">
+
+      <div id="Sign Up" class="tabcontent">
+        <form id="signup-form">
+          <div class="input-group">
+            <input type="email" id="signup-email" required />
+            <label for="signup-email">Email</label>
+          </div>
+          <div class="input-group">
+            <input type="password" id="signup-password" required />
+            <label for="signup-password">Password</label>
+          </div>
+          <button type="submit" class="btn btn-secondary">Sign Up</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content" style="display: none;">
+      <!-- Progress Bar -->
+      <div id="progress-container" style="display: none;">
+        <label for="progress-bar">Percent of Scam:</label>
+        <div id="progress-bar">
+          <div id="progress-fill"></div>
+        </div>
+        <div id="progress-text">0%</div>
+      </div>
+
+      <button id="scanEmails" class="btn btn-primary">Scan Emails</button>
+      <button id="visitWebsite" class="btn btn-secondary">Visit Our Website</button>
+      <button id="logout" class="btn btn-secondary">Log Out</button>
+      <div id="output">
+        <p>No scans yet. Results will be displayed here.</p>
+      </div>
+
+      <div class="settings">
+        <h2>Settings</h2>
+        <div class="settings-item">
+          <label for="enableNotifications">Enable Notifications</label>
+          <label class="switch">
+            <input type="checkbox" id="enableNotifications" />
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <div class="settings-item">
+          <label for="autoScan">Auto Scan on Load</label>
+          <label class="switch">
+            <input type="checkbox" id="autoScan" />
+            <span class="slider round"></span>
+          </label>
+        </div>
+        <div class="settings-item">
+          <label for="darkMode">Enable Dark Mode</label>
+          <label class="switch">
+            <input type="checkbox" id="darkMode" />
+            <span class="slider round"></span>
+          </label>
+        </div>
       </div>
     </div>
   </div>
 
   <div class="footer">
-    &copy; 2023 Your Company. All rights reserved. <br>
+    &copy; 2024 Phinding nemo. All rights reserved.
+    <br />
     <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a>
   </div>
-
 
   <script src="popup.js"></script>
 </body>

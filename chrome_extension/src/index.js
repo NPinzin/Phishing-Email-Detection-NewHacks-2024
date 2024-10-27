@@ -1,20 +1,13 @@
 const express = require('express');
-const cors = require('cors'); // Import cors
+const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const app = express();
-const LogInCollection = require('./mongodb');
+const LogInCollection = require('./mongodb'); // Make sure this path is correct
 const port = process.env.PORT || 3000;
 
-// Enable CORS for all routes
 app.use(cors());
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
-// Remove views and static file serving since we don't need them
-// app.set('view engine', 'hbs');
-// app.set('views', templatePath);
-// app.use(express.static(publicPath));
 
 // API Endpoint for Signup
 app.post('/api/signup', async (req, res) => {
@@ -32,7 +25,7 @@ app.post('/api/signup', async (req, res) => {
             return res.status(201).json({ message: 'Signup successful' });
         }
     } catch (error) {
-        console.error(error);
+        console.error('Error during signup:', error);
         res.status(500).json({ message: 'Error during signup' });
     }
 });
