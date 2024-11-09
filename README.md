@@ -7,7 +7,7 @@ After implementing previous models to lackluster results and heavy overfitting, 
 Front end website hosted at **findingnemo.co** *https://github.com/gracelhao/gracelhao.github.io* developed with **React**. A chrome extension is also available with a download on the website, and users can click to scan their email.
 
 ## Back End & RNN Implementation
-Hosted with Flask to direct user emails to a preloaded version of the RNN, trained on similar data.
+Hosted with Flask to direct user emails to a preloaded version of the RNN, trained on a culmination of over 10,000 spam and safe emails. This returns a percentage likelihood of spam that is used to generate a visual for the user and affirm spam vs not spam.
 
 
 ## Neural Network & Other Attempts
