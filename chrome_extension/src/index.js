@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const app = express();
-const LogInCollection = require('./mongodb'); // Make sure this path is correct
+const LogInCollection = require('./mongodb.js'); // Make sure this path is correct
 const port = process.env.PORT || 3000;
 
 app.use(cors());
