@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Scam-Email-Detection-NewHacks-2024
 
 ## Recurrent Neural Network
@@ -42,7 +41,6 @@ Including,
 > Implements several functions to scrape an email as a string of html into the paramaters above using **Python** libraries such as **RegEx**, **BeautifulSoup4**, and **tldextract**.
 
 
-=======
 # Scam-Email-Detection-NewHacks-2024 (Phishing Nemo)
 
 ## Recurrent Neural Network
@@ -81,7 +79,6 @@ Including,
 
 ### *HTML_extraction.ipynb*
 > Implements several functions to scrape an email as a string of html into the paramaters above using **Python** libraries such as **RegEx**, **BeautifulSoup4**, and **tldextract**.
->>>>>>> 5b92095efa2a89a511da82a3db11da1668010a09
 
 
 # References
