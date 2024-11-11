@@ -157,4 +157,4 @@ async function extractEmailData() {
     } else {
         throw new Error('Unsupported platform!');
     }
-}
+}  

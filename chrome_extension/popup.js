@@ -35,18 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     progressFill.style.width = percentage + '%';
     progressText.textContent = percentage + '%';
-    // Change the color of the progress fill based on the percentage ranges
-    if (percentage < 25) {
-      progressFill.style.backgroundColor = '#006400'; // Darker green
-    } else if (percentage < 50) {
-      progressFill.style.backgroundColor = '#008000'; // Green
-    } else if (percentage < 70) {
-      progressFill.style.backgroundColor = '#f1c40f'; // Yellow
-    } else if (percentage < 90) {
-      progressFill.style.backgroundColor = '#e67e22'; // Orange
-    } else {
-      progressFill.style.backgroundColor = '#e74c3c'; // Red
-    }
   }
 
 

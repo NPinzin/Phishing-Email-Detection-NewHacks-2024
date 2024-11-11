@@ -38,5 +38,3 @@ const logInSchema = new mongoose.Schema({
 const LogInCollection = mongoose.model('LogInCollection', logInSchema);
 
 module.exports = LogInCollection;
-
-
